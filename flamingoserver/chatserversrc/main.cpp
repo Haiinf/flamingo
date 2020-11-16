@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
 
     int ch;
-    bool bdaemon = false;
+    bool bdaemon = false; // 是否以守护进程的方式开启
     while ((ch = getopt(argc, argv, "d")) != -1)
     {
         switch (ch)
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 #ifdef WIN32
     CConfigFileReader config("../etc/chatserver.conf");
 #else
-    CConfigFileReader config("etc/chatserver.conf");
+    CConfigFileReader config("etc/chatserver.conf");  // 解析一个配置文件， 放在 map 中
 #endif
 
     const char* logbinarypackage = config.getConfigName("logbinarypackage");
