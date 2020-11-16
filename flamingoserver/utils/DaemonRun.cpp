@@ -9,6 +9,8 @@
 #include "../base/Platform.h"
 
 #ifndef WIN32
+/*
+*/
 void daemon_run()
 {
     int pid;
@@ -30,9 +32,9 @@ void daemon_run()
     //parent进程作为会话的领头进程，如果exit结束执行的话，那么子进程会成为孤儿进程，并被init收养。
     //执行setsid()之后,child将重新获得一个新的会话(session)id。
     //这时parent退出之后,将不会影响到child了。
-    setsid();
+    setsid(); // 创建一个会话
     int fd;
-    fd = open("/dev/null", O_RDWR, 0);
+    fd = open("/dev/null", O_RDWR, 0);  //  重定向文件描述符
     if (fd != -1)
     {
         dup2(fd, STDIN_FILENO);
