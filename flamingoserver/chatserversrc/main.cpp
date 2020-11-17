@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     CConfigFileReader config("etc/chatserver.conf");  // 解析一个配置文件， 放在 map 中
 #endif
 
-    const char* logbinarypackage = config.getConfigName("logbinarypackage");
+    const char* logbinarypackage = config.getConfigName("logbinarypackage"); // 日志是否打印出包的二进制数据
     if (logbinarypackage != NULL)
     {
         int logbinarypackageint = atoi(logbinarypackage);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     std::string logFileFullPath;
 
 #ifndef WIN32
-    const char* logfilepath = config.getConfigName("logfiledir");
+    const char* logfilepath = config.getConfigName("logfiledir"); // 日志目录
     if (logfilepath == NULL)
     {
         LOGF("logdir is not set in config file");
@@ -137,14 +137,25 @@ int main(int argc, char* argv[])
         LOGF("Init UserManager failed, please check your database config..............");
     }
 
+    /*
+        聊天服务:   
+                1, 初始化 TCPServer
+                2, 设置连接成功回调函数
+                3，开启线程池
+                4，注册监听套接字到 g_mainLoop
+    */
     const char* listenip = config.getConfigName("listenip");
     short listenport = (short)atol(config.getConfigName("listenport"));
     Singleton<ChatServer>::Instance().init(listenip, listenport, &g_mainLoop);
 
+    /*
+        监控程序
+    */
     const char* monitorlistenip = config.getConfigName("monitorlistenip");
     short monitorlistenport = (short)atol(config.getConfigName("monitorlistenport"));
     const char* monitortoken = config.getConfigName("monitortoken");
     Singleton<MonitorServer>::Instance().init(monitorlistenip, monitorlistenport, &g_mainLoop, monitortoken);
+
 
     const char* httplistenip = config.getConfigName("monitorlistenip");
     short httplistenport = (short)atol(config.getConfigName("httplistenport"));
@@ -152,6 +163,7 @@ int main(int argc, char* argv[])
 
     LOGI("chatserver initialization completed, now you can use client to connect it.");
 
+    // 开启服务（包括启动聊天服务监听等）
     g_mainLoop.loop();
 
     LOGI("exit chatserver.");

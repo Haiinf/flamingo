@@ -18,10 +18,12 @@ ChatServer::ChatServer()
 bool ChatServer::init(const char* ip, short port, EventLoop* loop)
 {   
     InetAddress addr(ip, port);
+
     m_server.reset(new TcpServer(loop, addr, "FLAMINGO-SERVER", TcpServer::kReusePort));
-    m_server->setConnectionCallback(std::bind(&ChatServer::onConnected, this, std::placeholders::_1));
-    //启动侦听
-    m_server->start(6);
+
+    m_server->setConnectionCallback(std::bind(&ChatServer::onConnected, this, std::placeholders::_1));  // 设置连接成功回调函数
+    
+    m_server->start(6);  // 启动线程池， 注册监听
 
     return true;
 }
