@@ -4,6 +4,7 @@ project (FLAMGINGO_SERVER)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g -Wall -O0 -Wno-unused-variable -pthread")
 
+# 添加非标准的共享库搜索路径
 link_directories(
     ${PROJECT_SOURCE_DIR}/lib
 	/usr/lib64/mysql/
@@ -123,10 +124,13 @@ fileserversrc/TcpSession.cpp)
 
 add_executable(chatserver ${net_srcs} ${json_srcs}  ${chatserver_srcs} ${mysqlapi_srcs} ${mysqlmgr_srcs} ${zlib_srcs} ${utils_srcs})
 #光包含库目录是没用的，还必须使用TARGET_LINK_LIBRARIES链接该库
+#为 target 添加需要链接的共享库
 TARGET_LINK_LIBRARIES(chatserver mysqlclient)
 
+# 生成可执行文件
 add_executable(fileserver ${net_srcs}  ${fileserver_srcs} ${utils_srcs})
 TARGET_LINK_LIBRARIES(fileserver)
+
 
 add_executable(imgserver ${net_srcs}  ${imgserver_srcs} ${utils_srcs})
 TARGET_LINK_LIBRARIES(imgserver)
