@@ -1,6 +1,5 @@
 /** 
  *  文件服务器主服务类，FileServer.h
- *  zhangyl 2017.03.17
  **/
 #pragma once
 #include <memory>
@@ -31,8 +30,9 @@ public:
     FileServer(const FileServer &rhs) = delete;
     FileServer &operator=(const FileServer &rhs) = delete;
 
-    // 
+    // 创建 TCPServer, 设置连接回调函数
     bool init(const char *ip, short port, EventLoop *loop, const char *fileBaseDir = "filecache/");
+    // 终止 TCPServer
     void uninit();
 
 private:
@@ -45,8 +45,8 @@ private:
    
 
 private:
-    std::unique_ptr<TcpServer>            m_server;     
-    std::list<std::shared_ptr<FileSession>>      m_sessions;
-    std::mutex                    m_sessionMutex;    //多线程之间保护m_sessions
-    std::string                    m_strFileBaseDir;   //文件目录
+    std::unique_ptr<TcpServer>                      m_server;     
+    std::list<std::shared_ptr<FileSession>>         m_sessions;
+    std::mutex                                      m_sessionMutex;    //多线程之间保护m_sessions
+    std::string                                     m_strFileBaseDir;   //文件目录
 };

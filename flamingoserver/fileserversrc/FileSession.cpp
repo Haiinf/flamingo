@@ -34,16 +34,16 @@ FileSession::~FileSession()
 
 void FileSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBuffer, Timestamp receivTime)
 {
-    while (true)
+    while (true) // 注意， 我们并不知道一个 pBuffer 中有几个我们定义的 “包”（不够一个， 或者几个，几个多一点等）， 所以我们要循环读
     {
-        //不够一个包头大小
+        // 可读数据大小不够一个包头大小
         if (pBuffer->readableBytes() < (size_t)sizeof(file_msg_header))
         {
             //LOGI << "buffer is not enough for a package header, pBuffer->readableBytes()=" << pBuffer->readableBytes() << ", sizeof(msg)=" << sizeof(file_msg);
             return;
         }
 
-        //不够一个整包大小
+        // 先取出包头，判断包头
         file_msg_header header;
         memcpy(&header, pBuffer->peek(), sizeof(file_msg_header));
 
@@ -53,17 +53,23 @@ void FileSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBu
             //客户端发非法数据包，服务器主动关闭之
             LOGE("Illegal package header size: %lld, close TcpConnection, client: %s", header.packagesize, conn->peerAddress().toIpPort().c_str());
             LOG_DEBUG_BIN((unsigned char*)&header, sizeof(header));
-            conn->forceClose();
+            conn->forceClose(); // 移除监听， 调用回调函数， 移除连接
             return;
         }
 
+        //判断是否够一个整包大小
         if (pBuffer->readableBytes() < (size_t)header.packagesize + sizeof(file_msg_header))
             return;
 
-        pBuffer->retrieve(sizeof(file_msg_header));
+        // 前面已经读了， 这里只需将未读指针后移即可
+        pBuffer->retrieve(sizeof(file_msg_header)); 
+        
+        // 读包数据， 并把可读指针后移
         std::string inbuf;
         inbuf.append(pBuffer->peek(), header.packagesize);
         pBuffer->retrieve(header.packagesize);
+
+        // 解包
         if (!process(conn, inbuf.c_str(), inbuf.length()))
         {
             LOGE("Process error, close TcpConnection, client: %s", conn->peerAddress().toIpPort().c_str());
@@ -75,16 +81,16 @@ void FileSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBu
 
 bool FileSession::process(const std::shared_ptr<TcpConnection>& conn, const char* inbuf, size_t length)
 {
-    BinaryStreamReader readStream(inbuf, length);
+    BinaryStreamReader readStream(inbuf, length); // 这里构造一个 BinaryStreamReader
     int32_t cmd;
-    if (!readStream.ReadInt32(cmd))
+    if (!readStream.ReadInt32(cmd)) // 读一个 int32_t 并将网络字节序转换为本机字节序
     {
         LOGE("read cmd error, client: %s", conn->peerAddress().toIpPort().c_str());
         return false;
     }
 
     //int seq;
-    if (!readStream.ReadInt32(m_seq))
+    if (!readStream.ReadInt32(m_seq)) // 当前 session 的数据包序号？ 一个 session 只有一个包？
     {
         LOGE("read seq error, client: %s", conn->peerAddress().toIpPort().c_str());
         return false;
@@ -92,7 +98,7 @@ bool FileSession::process(const std::shared_ptr<TcpConnection>& conn, const char
 
     std::string filemd5;
     size_t md5length;
-    if (!readStream.ReadString(&filemd5, 0, md5length) || md5length == 0)
+    if (!readStream.ReadString(&filemd5, 0, md5length) || md5length == 0) // 读一个 md5 string
     {
         LOGE("read filemd5 error, client: ", conn->peerAddress().toIpPort().c_str());
         return false;

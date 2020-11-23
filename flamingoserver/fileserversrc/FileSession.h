@@ -21,10 +21,13 @@ public:
     void onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBuffer, Timestamp receivTime);   
 
 private:
-    //64位机器上，size_t是8个字节
+    // 64位机器上，size_t是8个字节
     bool process(const std::shared_ptr<TcpConnection>& conn, const char* inbuf, size_t length);
     
+    // 客户端文件上传
     bool onUploadFileResponse(const std::string& filemd5, int64_t offset, int64_t filesize, const std::string& filedata, const std::shared_ptr<TcpConnection>& conn);
+    
+    // 客户端文件下载
     bool onDownloadFileResponse(const std::string& filemd5, int32_t clientNetType, const std::shared_ptr<TcpConnection>& conn);
 
     void resetFile();
