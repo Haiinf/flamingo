@@ -1,5 +1,5 @@
 /** 
- *  ÎÄ¼ş·şÎñÆ÷Ö÷·şÎñÀà£¬FileServer.h
+ *  æ–‡ä»¶æœåŠ¡å™¨ä¸»æœåŠ¡ç±»ï¼ŒFileServer.h
  *  zhangyl 2017.03.17
  **/
 #pragma once
@@ -15,10 +15,10 @@ using namespace net;
 
 struct StoredUserInfo
 {
-    int32_t         userid;
-    std::string     username;
-    std::string     password;
-    std::string     nickname;
+    int32_t userid;
+    std::string username;
+    std::string password;
+    std::string nickname;
 };
 
 class FileServer final
@@ -27,22 +27,21 @@ public:
     FileServer() = default;
     ~FileServer() = default;
 
-    FileServer(const FileServer& rhs) = delete;
-    FileServer& operator =(const FileServer& rhs) = delete;
+    FileServer(const FileServer &rhs) = delete;
+    FileServer &operator=(const FileServer &rhs) = delete;
 
-    bool init(const char* ip, short port, EventLoop* loop, const char* fileBaseDir = "filecache/");
+    bool init(const char *ip, short port, EventLoop *loop, const char *fileBaseDir = "filecache/");
     void uninit();
 
 private:
-    //ĞÂÁ¬½Óµ½À´µ÷ÓÃ»òÁ¬½Ó¶Ï¿ª£¬ËùÒÔĞèÒªÍ¨¹ıconn->connected()À´ÅĞ¶Ï£¬Ò»°ãÖ»ÔÚÖ÷loopÀïÃæµ÷ÓÃ
-    void onConnected(std::shared_ptr<TcpConnection> conn);  
-    //Á¬½Ó¶Ï¿ª
-    void onDisconnected(const std::shared_ptr<TcpConnection>& conn);
-   
+    //æ–°è¿æ¥åˆ°æ¥è°ƒç”¨æˆ–è¿æ¥æ–­å¼€ï¼Œæ‰€ä»¥éœ€è¦é€šè¿‡conn->connected()æ¥åˆ¤æ–­ï¼Œä¸€èˆ¬åªåœ¨ä¸»loopé‡Œé¢è°ƒç”¨
+    void onConnected(std::shared_ptr<TcpConnection> conn);
+    //è¿æ¥æ–­å¼€ï¼Œç›®å‰åªæ˜¯ä» m_sessions ä¸­ç§»é™¤
+    void onDisconnected(const std::shared_ptr<TcpConnection> &conn);
 
 private:
-    std::unique_ptr<TcpServer>                     m_server;
-    std::list<std::shared_ptr<FileSession>>        m_sessions;
-    std::mutex                                     m_sessionMutex;      //¶àÏß³ÌÖ®¼ä±£»¤m_sessions
-    std::string                                    m_strFileBaseDir;    //ÎÄ¼şÄ¿Â¼
+    std::unique_ptr<TcpServer>            m_server;     
+    std::list<std::shared_ptr<FileSession>>      m_sessions;
+    std::mutex                    m_sessionMutex;    //å¤šçº¿ç¨‹ä¹‹é—´ä¿æŠ¤m_sessions
+    std::string                    m_strFileBaseDir;   //æ–‡ä»¶ç›®å½•
 };

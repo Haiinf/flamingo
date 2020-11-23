@@ -1,3 +1,4 @@
+#指定运行此配置文件所需的CMake的最低版本
 cmake_minimum_required(VERSION 2.6)
 
 project (FLAMGINGO_SERVER)

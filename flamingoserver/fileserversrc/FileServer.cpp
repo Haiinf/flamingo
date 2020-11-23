@@ -14,6 +14,7 @@ bool FileServer::init(const char* ip, short port, EventLoop* loop, const char* f
 
     InetAddress addr(ip, port);
     m_server.reset(new TcpServer(loop, addr, "ZYL-MYImgAndFileServer", TcpServer::kReusePort));
+    // 设置连接回调函数
     m_server->setConnectionCallback(std::bind(&FileServer::onConnected, this, std::placeholders::_1));
     //启动侦听
     m_server->start(6);
@@ -32,7 +33,9 @@ void FileServer::onConnected(std::shared_ptr<TcpConnection> conn)
     if (conn->connected())
     {
         LOGI("client connected: %s", conn->peerAddress().toIpPort().c_str());
+        // 连接成功，就建立一个会话
         std::shared_ptr<FileSession> spSession(new FileSession(conn, m_strFileBaseDir.c_str()));
+        // 设置 TcpConnection 的可读回调
         conn->setMessageCallback(std::bind(&FileSession::onRead, spSession.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
         std::lock_guard<std::mutex> guard(m_sessionMutex);
@@ -43,6 +46,7 @@ void FileServer::onConnected(std::shared_ptr<TcpConnection> conn)
         onDisconnected(conn);
     }
 }
+
 
 void FileServer::onDisconnected(const std::shared_ptr<TcpConnection>& conn)
 {

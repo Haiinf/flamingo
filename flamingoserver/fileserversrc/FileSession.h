@@ -7,6 +7,7 @@
 #include "../net/Buffer.h"
 #include "TcpSession.h"
 
+// 文件服务器会话类
 class FileSession : public TcpSession
 {
 public:
