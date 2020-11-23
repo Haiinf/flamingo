@@ -1,5 +1,5 @@
 /** 
- *  文件服务器主服务类，FileServer.h
+ *  鏂囦欢鏈嶅姟鍣ㄤ富鏈嶅姟绫伙紝FileServer.h
  *  zhangyl 2017.03.17
  **/
 #pragma once
@@ -15,10 +15,10 @@ using namespace net;
 
 struct StoredUserInfo
 {
-    int32_t         userid;
-    std::string     username;
-    std::string     password;
-    std::string     nickname;
+    int32_t userid;
+    std::string username;
+    std::string password;
+    std::string nickname;
 };
 
 class FileServer final
@@ -27,10 +27,10 @@ public:
     FileServer() = default;
     ~FileServer() = default;
 
-    FileServer(const FileServer& rhs) = delete;
-    FileServer& operator =(const FileServer& rhs) = delete;
+    FileServer(const FileServer &rhs) = delete;
+    FileServer &operator=(const FileServer &rhs) = delete;
 
-    bool init(const char* ip, short port, EventLoop* loop, const char* fileBaseDir = "filecache/");
+    bool init(const char *ip, short port, EventLoop *loop, const char *fileBaseDir = "filecache/");
     void uninit();
 
 private:
@@ -42,8 +42,8 @@ private:
    
 
 private:
-    std::unique_ptr<TcpServer>                     m_server;
-    std::list<std::shared_ptr<FileSession>>        m_sessions;
-    std::mutex                                     m_sessionMutex;      //多线程之间保护m_sessions
-    std::string                                    m_strFileBaseDir;    //文件目录
+    std::unique_ptr<TcpServer>            m_server;     
+    std::list<std::shared_ptr<FileSession>>      m_sessions;
+    std::mutex                    m_sessionMutex;    //澶氱嚎绋嬩箣闂翠繚鎶?m_sessions
+    std::string                    m_strFileBaseDir;   //鏂囦欢鐩?褰?
 };

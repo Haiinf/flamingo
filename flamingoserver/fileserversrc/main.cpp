@@ -95,17 +95,20 @@ int main(int argc, char* argv[])
     logFileFullPath = logfilepath;
 #endif
 
+    // 日志位置
     const char* logfilename = config.getConfigName("logfilename");
     logFileFullPath += logfilename;
-
     CAsyncLog::init(logFileFullPath.c_str());
 
+    // 文件缓存位置
     const char* filecachedir = config.getConfigName("filecachedir");
     Singleton<FileManager>::Instance().init(filecachedir);   
-
+    
+    // 监听地址
     const char* listenip = config.getConfigName("listenip");
     short listenport = (short)atol(config.getConfigName("listenport"));
     Singleton<FileServer>::Instance().init(listenip, listenport, &g_mainLoop, filecachedir);
+
 
     LOGI("fileserver initialization completed, now you can use client to connect it.");
     
