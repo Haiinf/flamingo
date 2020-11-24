@@ -105,14 +105,14 @@ bool FileSession::process(const std::shared_ptr<TcpConnection>& conn, const char
     }
 
     int64_t offset;
-    if (!readStream.ReadInt64(offset))
+    if (!readStream.ReadInt64(offset)) // 偏移
     {
         LOGE("read offset error, client: %s" , conn->peerAddress().toIpPort().c_str());
         return false;
     }
 
     int64_t filesize;
-    if (!readStream.ReadInt64(filesize))
+    if (!readStream.ReadInt64(filesize)) // 文件大小
     {
         LOGE("read filesize error, client: %s", conn->peerAddress().toIpPort().c_str());
         return false;
@@ -120,7 +120,7 @@ bool FileSession::process(const std::shared_ptr<TcpConnection>& conn, const char
 
     string filedata;
     size_t filedatalength;
-    if (!readStream.ReadString(&filedata, 0, filedatalength))
+    if (!readStream.ReadString(&filedata, 0, filedatalength)) // 文件
     {
         LOGE("read filedata error, client: %s", conn->peerAddress().toIpPort().c_str());
         return false;
@@ -188,13 +188,13 @@ bool FileSession::onUploadFileResponse(const std::string& filemd5, int64_t offse
         return true;
     }
     
-    if (offset == 0)
+    if (offset == 0) // 客户端上传一个新文件，在指定文件夹创建一个只写二进制文件
     {
         std::string filename = m_strFileBaseDir;
         filename += filemd5;
         //这个地方我开始使用的是“w”模式，这在Linux平台没问题，但在Windows上因为是文本模式，fwrite函数在遇到文件中有0x0A时，会自动补上0x0D，造成文件内容出错
         //所以改成wb，使用二进制模式
-        m_fp = fopen(filename.c_str(), "wb");
+        m_fp = fopen(filename.c_str(), "wb");   // wb, 只写方式打开或创建一个二进制文件，文件存在，内容清空，文件不存在则创建
         if (m_fp == NULL)
         {
             LOGE("fopen file error, filemd5: %s, client: %s", filemd5.c_str(), conn->peerAddress().toIpPort().c_str());
@@ -214,7 +214,7 @@ bool FileSession::onUploadFileResponse(const std::string& filemd5, int64_t offse
         }
     }
 
-    if (fseek(m_fp, offset, SEEK_SET) == -1)
+    if (fseek(m_fp, offset, SEEK_SET) == -1) // 以文件头为基准设置文件指针的位置， 如果执行失败则不改变文件指针的位置
     {
         LOGE("fseek error, filemd5: %s, errno: %d, errinfo: %s, filedata.length(): %lld, m_fp: 0x%x, buffer size is 512*1024, client: %s",
             filemd5.c_str(), errno, strerror(errno), filedata.length(), m_fp, conn->peerAddress().toIpPort().c_str());
@@ -222,7 +222,15 @@ bool FileSession::onUploadFileResponse(const std::string& filemd5, int64_t offse
         resetFile();
         return false;
     }
-
+    
+    /* size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+        ptr:    被写入的元素数组的指针
+        size:    被写入的每个元素的大小，单位是字节
+        nmemb:   元素的个数，每个元素的大小为 size 字节
+        stream:   指向 FILE 对象的指针， 该 FILE 对象指定了一个输出流
+      返回值：返回元素总数，该值应该与 nmemb 相同
+      调用此函数， 只是将数据写到用户缓冲区，并未同步到文件，需要调用 fflush 同步
+    */
     if (fwrite((char*)filedata.c_str(), 1, filedata.length(), m_fp) != filedata.length())
     {
         resetFile();
@@ -231,7 +239,7 @@ bool FileSession::onUploadFileResponse(const std::string& filemd5, int64_t offse
         return false;
     }
 
-    //将文件内容刷到磁盘上去
+    //将文件内容刷到磁盘上去，将用户缓冲区的数据写到内核缓冲区（再写到文件中），同时清空用户缓冲区
     if (fflush(m_fp) != 0)
     {
         LOGE("fflush error, filemd5: %s, errno: %d, errinfo: %s, filedata.length(): %lld, m_fp: 0x%x, buffer size is 512*1024, client: %s",
@@ -242,7 +250,7 @@ bool FileSession::onUploadFileResponse(const std::string& filemd5, int64_t offse
 
     int32_t errorcode = file_msg_error_progress;
 
-    //文件上传成功
+    //文件上传成功，为啥是这样判断文件上传成功
     if (offset + (int64_t)filedata.length() == filesize)
     {
         offset = filesize;
@@ -272,6 +280,7 @@ bool FileSession::onDownloadFileResponse(const std::string& filemd5, int32_t cli
         return false;
     }
     
+    // 该文件不存在
     if (!Singleton<FileManager>::Instance().isFileExsit(filemd5.c_str()))
     {
         //客户端下载不存在的文件，告诉客户端不存在该文件

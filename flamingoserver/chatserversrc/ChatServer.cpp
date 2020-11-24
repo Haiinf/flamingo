@@ -50,6 +50,9 @@ void ChatServer::onConnected(std::shared_ptr<TcpConnection> conn)
     {
         LOGD("client connected: %s", conn->peerAddress().toIpPort().c_str());
         ++m_sessionId;
+        /*
+          创建一个会话，设置读事件回调函数
+        */
         std::shared_ptr<ChatSession> spSession(new ChatSession(conn, m_sessionId));
         conn->setMessageCallback(std::bind(&ChatSession::onRead, spSession.get(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));       
 

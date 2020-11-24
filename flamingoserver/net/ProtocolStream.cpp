@@ -51,17 +51,22 @@ namespace net
         } while (value);
     }
 
-    //将一个8字节的整型值编码成1~10个字节
+    //将一个8字节的整型值编码成1~10个字节，
     void write7BitEncoded(uint64_t value, std::string& buf)
     {
+        /*
+          0x7F = 0111 1111
+          0x80 = 1000 0000
+          压缩后，我们用 8bit 来记录原来的 7bit 的信息，[0,6] 位按 7bit 原值写入，最后一个 bit 用来标记时候还存在高位
+        */
         do
-        {
-            unsigned char c = (unsigned char)(value & 0x7F);
+        {   
+            unsigned char c = (unsigned char)(value & 0x7F); // 0 到 6 位按原值写入
             value >>= 7;
-            if (value)
+            if (value)  // 如果原值的第7位及以后存在1，则最高位写入1，否则写入0 
                 c |= 0x80;
 
-            buf.append(1, c);
+            buf.append(1, c); // 压缩后，低位字节在前面
         } while (value);
     }
 
@@ -74,13 +79,13 @@ namespace net
         int index = 0;
         do
         {
-            c = buf[index];
-            uint32_t x = (c & 0x7F);
+            c = buf[index]; // 从低字节开始读
+            uint32_t x = (c & 0x7F); // 直接读 0 到 6 位， 每次只读 7 个字节
             x <<= bitCount;
             value += x;
             bitCount += 7;
             ++index;
-        } while (c & 0x80);
+        } while (c & 0x80); // 更高位已经不存在 1 了就不用继续读了
     }
 
     //将一个1~10个字节的值还原成4字节的整型值
@@ -305,17 +310,18 @@ namespace net
     }
 
     //=================class BinaryStreamWriter implementation============//
+    // 构造函数
     BinaryStreamWriter::BinaryStreamWriter(string* data) :
         m_data(data)
     {
         m_data->clear();
         char str[BINARY_PACKLEN_LEN_2 + CHECKSUM_LEN];
-        m_data->append(str, sizeof(str));
+        m_data->append(str, sizeof(str)); // 预制 4 字节包长度位置 + 2 字节校验和位置
     }
     bool BinaryStreamWriter::WriteCString(const char* str, size_t len)
     {
         std::string buf;
-        write7BitEncoded(len, buf);
+        write7BitEncoded(len, buf); // 将 8 字节的len 压缩成 1~10字节
 
         m_data->append(buf);
 
@@ -342,7 +348,7 @@ namespace net
     {
         int32_t i2 = 999999999;
         if (isNULL == false)
-            i2 = htonl(i);
+            i2 = htonl(i); // 转为网络字节序
         m_data->append((char*)& i2, sizeof(i2));
         return true;
     }
@@ -390,11 +396,12 @@ namespace net
             WriteCString(doublestr, 0);
         return true;
     }
+    // 将数据的长度写到预留的起始位置
     void BinaryStreamWriter::Flush()
     {
         char* ptr = &(*m_data)[0];
         unsigned int ulen = htonl(m_data->length());
-        memcpy(ptr, &ulen, sizeof(ulen));
+        memcpy(ptr, &ulen, sizeof(ulen)); 
     }
     void BinaryStreamWriter::Clear()
     {

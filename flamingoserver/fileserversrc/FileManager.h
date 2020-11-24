@@ -16,8 +16,10 @@ public:
     FileManager(const FileManager& rhs) = delete;
     FileManager& operator = (const FileManager& rhs) = delete;
 
+    // 将 basepath 作为文件管理目录，将此目录下的所有文件的名字加载到内存
     bool init(const char* basepath);
 
+    // 判断文件是否存在，不存在在目录下查找
     bool isFileExsit(const char* filename);
     void addFile(const char* filename);
 

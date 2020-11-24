@@ -9,10 +9,10 @@
 enum file_msg_type
 {
     file_msg_type_unknown,
-    msg_type_upload_req,
-    msg_type_upload_resp,
-    msg_type_download_req,
-    msg_type_download_resp,
+    msg_type_upload_req,  // 文件上传请求
+    msg_type_upload_resp,  // 文件上传应答
+    msg_type_download_req, // 文件下载请求
+    msg_type_download_resp, // 文件下载应答
 };
 
 enum file_msg_error_code

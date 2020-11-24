@@ -77,6 +77,7 @@ namespace net
         const char* cur;
     };
 
+    // 二进制流写
     class BinaryStreamWriter final
     {
     public:
@@ -101,7 +102,7 @@ namespace net
         BinaryStreamWriter& operator=(const BinaryStreamWriter&) = delete;
 
     private:
-        std::string* m_data;
+        std::string* m_data; // 内含一个string
     };
 
 }// end namespace

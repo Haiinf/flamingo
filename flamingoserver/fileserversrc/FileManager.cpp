@@ -39,7 +39,7 @@ bool FileManager::init(const char* basepath)
 
     return true;    
 #else
-    DIR* dp = opendir(basepath);
+    DIR* dp = opendir(basepath); // 打开目录句柄
     if (dp == NULL)
     {
         LOGE("open base dir error, errno: %d, %s",  errno, strerror(errno));
@@ -54,7 +54,7 @@ bool FileManager::init(const char* basepath)
 
     struct dirent* dirp;
     //struct stat filestat;
-    while ((dirp = readdir(dp)) != NULL)
+    while ((dirp = readdir(dp)) != NULL) // 遍历目录里的所有文件
     {
         if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
             continue;

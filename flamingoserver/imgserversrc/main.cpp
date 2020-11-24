@@ -37,6 +37,9 @@ void prog_exit(int signo)
 }
 #endif
 
+/*
+  图片也是一种文件，故当做文件处理就行
+*/
 int main(int argc, char* argv[])
 {
 #ifndef WIN32

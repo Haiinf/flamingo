@@ -82,20 +82,23 @@ void ChatSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBu
             //收到的数据不够一个完整的包
             if (pBuffer->readableBytes() < (size_t)header.compresssize + sizeof(chat_msg_header))
                 return;
-
+            // 将 pBuffer 的未读起始指针后移
             pBuffer->retrieve(sizeof(chat_msg_header));
+            
+            // 读取数据包，将未读起始指针后移
             std::string inbuf;
             inbuf.append(pBuffer->peek(), header.compresssize);
             pBuffer->retrieve(header.compresssize);
+
             std::string destbuf;
-            if (!ZlibUtil::uncompressBuf(inbuf, destbuf, header.originsize))
+            if (!ZlibUtil::uncompressBuf(inbuf, destbuf, header.originsize)) // 解压
             {
                 LOGE("uncompress error, client: %s", conn->peerAddress().toIpPort().c_str());
                 conn->forceClose();
                 return;
             }
 
-            if (!process(conn, destbuf.c_str(), destbuf.length()))
+            if (!process(conn, destbuf.c_str(), destbuf.length())) // 处理包
             {
                 //客户端发非法数据包，服务器主动关闭之
                 LOGE("Process error, close TcpConnection, client: %s", conn->peerAddress().toIpPort().c_str());
@@ -105,8 +108,7 @@ void ChatSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBu
 
             m_lastPackageTime = time(NULL);
         }
-        //数据包未压缩
-        else
+        else //数据包未压缩
         {
             //包头有错误，立即关闭连接
             if (header.originsize <= 0 || header.originsize > MAX_PACKAGE_SIZE)
@@ -121,10 +123,15 @@ void ChatSession::onRead(const std::shared_ptr<TcpConnection>& conn, Buffer* pBu
             if (pBuffer->readableBytes() < (size_t)header.originsize + sizeof(chat_msg_header))
                 return;
 
+            // 未读起始指针后移
             pBuffer->retrieve(sizeof(chat_msg_header));
+
+            // 读取数据包，将未读起始指针后移
             std::string inbuf;
             inbuf.append(pBuffer->peek(), header.originsize);
             pBuffer->retrieve(header.originsize);
+
+            // 处理数据包
             if (!process(conn, inbuf.c_str(), inbuf.length()))
             {
                 //客户端发非法数据包，服务器主动关闭之

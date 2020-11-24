@@ -27,7 +27,7 @@ public:
         
         return tmpConn_.lock();
     }
-
+    // 这个 send 似乎也是业务代码
     void send(int32_t cmd, int32_t seq, int32_t errorcode, const std::string& filemd5, int64_t offset, int64_t filesize, const std::string& filedata);
 
 private:
